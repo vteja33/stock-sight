@@ -14,9 +14,9 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {
     "origins": [
         "http://localhost:5173",                    # Local dev
-        "https:stock-sight-gamma.vercel.app",
-        "stock-sight-vteja.vercel.app",
-        "stock-sight-git-main-vteja.vercel.app",
+        "https://stock-sight-gamma.vercel.app",
+        "https://stock-sight-vteja.vercel.app",
+        "https://stock-sight-git-main-vteja.vercel.app",
     ]
 }})
 
