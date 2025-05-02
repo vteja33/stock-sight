@@ -24,7 +24,9 @@ export default function App() {
   const handleFetch = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:5001/predict?symbol=${ticker}&days=${days}`);
+      const response = await fetch(
+        `http://localhost:5001/predict?symbol=${ticker}&days=${days}`
+      );
       const data = await response.json();
       setStockData(data);
     } catch (error) {
@@ -36,12 +38,15 @@ export default function App() {
   return (
     <div className="flex flex-col items-center mb-8 py-8">
       <div className="flex items-center gap-2 mb-4">
-        {/* <img src="/path-to-your-icon.png" alt="Logo" className="w-8 h-8" /> */}
+        <img
+          src={`${import.meta.env.BASE_URL}stocks.jpg`}
+          alt="Logo"
+          className="w-8 h-8"
+        />
         <h1 className="text-3xl font-bold">Stock Predictor</h1>
       </div>
 
       <div className="flex flex-wrap justify-center items-end gap-4 mb-8">
-        {/* Stock Search */}
         <div className="flex flex-col w-80">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Search Stock
@@ -49,7 +54,6 @@ export default function App() {
           <StockSearch stockOptions={stockOptions} onSelect={setTicker} />
         </div>
 
-        {/* Days Input */}
         <div className="flex flex-col w-32">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Days
@@ -62,30 +66,59 @@ export default function App() {
           />
         </div>
 
-        {/* Predict Button */}
         <Button onClick={handleFetch} disabled={loading} className="h-10">
           {loading ? <Loader2 className="animate-spin" /> : "Predict"}
-          </Button>
+        </Button>
       </div>
 
-      {/* Info + Graph */}
       {stockData && (
         <>
           <div className="bg-gray-100 p-4 rounded-md shadow-md mb-4 w-full max-w-2xl">
-            <h2 className="text-xl font-bold mb-2">Stock Info</h2>
-            <p>📈 <strong>Current Price:</strong> ${stockData.historical_prices.slice(-1)[0].toFixed(2)}</p>
-            <p>🔮 <strong>Predicted Price after {stockData.predicted_prices.length} days:</strong> ${stockData.predicted_prices.slice(-1)[0].toFixed(2)}</p>
+            <h2 className="text-xl text-center font-bold mb-2">
+              Stock Information
+            </h2>
+            <p>
+              📈 <strong>Current Price:</strong> $
+              {stockData.historical_prices.slice(-1)[0].toFixed(2)}
+            </p>
+            <p>
+              🔮{" "}
+              <strong>
+                Predicted Price after {stockData.predicted_prices.length} days:
+              </strong>{" "}
+              ${stockData.predicted_prices.slice(-1)[0].toFixed(2)}
+            </p>
+            <p>
+              ❓ <strong>Should you buy this stock:</strong>{" "}
+              {stockData.predicted_prices.slice(-1)[0].toFixed(2) -
+                stockData.historical_prices.slice(-1)[0].toFixed(2) >
+              0 ? (
+                <span className="text-green-700">Yes</span>
+              ) : (
+                <span className="text-red-700">No</span>
+              )}
+            </p>
+            <p>
+              📊 <strong>Model Accuracy:</strong>{" "}
+              {Math.round(stockData.model_accuracy * 100)}%
+            </p>
           </div>
 
           <div className="w-full max-w-4xl">
             <Line
               key={ticker}
               data={{
-                labels: [...stockData.historical_dates, ...stockData.future_dates],
+                labels: [
+                  ...stockData.historical_dates,
+                  ...stockData.future_dates,
+                ],
                 datasets: [
                   {
                     label: "Historical Prices",
-                    data: [...stockData.historical_prices, ...Array(stockData.future_dates.length).fill(null)],
+                    data: [
+                      ...stockData.historical_prices,
+                      ...Array(stockData.future_dates.length).fill(null),
+                    ],
                     borderColor: "blue",
                     fill: false,
                     tension: 0.3,
@@ -94,7 +127,9 @@ export default function App() {
                   {
                     label: "Predicted Prices",
                     data: [
-                      ...Array(stockData.historical_dates.length - 1).fill(null),
+                      ...Array(stockData.historical_dates.length - 1).fill(
+                        null
+                      ),
                       stockData.historical_prices.slice(-1)[0],
                       ...stockData.predicted_prices,
                     ],
@@ -120,9 +155,9 @@ export default function App() {
                 scales: {
                   x: {
                     ticks: {
-                      maxTicksLimit: 8, // 👈 Only show about 8 dates
-                      autoSkip: true,   // 👈 Skip ticks automatically if too crowded
-                      maxRotation: 0,   // 👈 No rotation for better readability
+                      maxTicksLimit: 8,
+                      autoSkip: true,
+                      maxRotation: 0,
                       minRotation: 0,
                     },
                     title: {
