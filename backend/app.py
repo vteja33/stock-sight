@@ -79,7 +79,9 @@ def predict_stock():
         })
 
     except Exception as e:
+        print("ERROR:", e)
         return jsonify({"error": str(e)}), 500
+
 
 # Run the Flask app
 if __name__ == "__main__":
