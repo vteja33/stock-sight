@@ -11,7 +11,14 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})  # Allow frontend to call backend
+CORS(app, resources={r"/*": {
+    "origins": [
+        "http://localhost:5173",                    # Local dev
+        "https:stock-sight-gamma.vercel.app",
+        "stock-sight-vteja.vercel.app",
+        "stock-sight-git-main-vteja.vercel.app",
+    ]
+}})
 
 @app.route('/predict', methods=['GET'])
 def predict_stock():

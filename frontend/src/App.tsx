@@ -25,7 +25,7 @@ export default function App() {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:5001/predict?symbol=${ticker}&days=${days}`
+        `https://stock-sight-backend.onrender.com/predict?symbol=${ticker}&days=${days}`
       );
       const data = await response.json();
       setStockData(data);
