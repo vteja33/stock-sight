@@ -23,9 +23,10 @@ export default function App() {
 
   const handleFetch = async () => {
     setLoading(true);
+    const backend_api_key = import.meta.env.VITE_BACKEND_API_KEY;
     try {
       const response = await fetch(
-        `https://stock-sight-backend.onrender.com/predict?symbol=${ticker}&days=${days}`
+        `${backend_api_key}/predict?symbol=${ticker}&days=${days}`
       );
       const data = await response.json();
       setStockData(data);
