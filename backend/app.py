@@ -7,13 +7,13 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
     "origins": [
-        "http://localhost:5173",                    # Local dev
+        "http://localhost:5173",
         "https://stock-sight-gamma.vercel.app",
         "https://stock-sight-vteja.vercel.app",
         "https://stock-sight-git-main-vteja.vercel.app",
@@ -27,7 +27,7 @@ def predict_stock():
 
     try:
         stock = yf.Ticker(ticker)
-        hist = stock.history(period="1y", interval="1d")
+        hist = stock.history(period="2y", interval="1d")
         data = hist[['Close']].dropna()
 
         if data.empty:
@@ -39,31 +39,33 @@ def predict_stock():
         WINDOW_SIZE = 30
         X, y = [], []
         for i in range(WINDOW_SIZE, len(scaled_data) - FUTURE_DAYS):
-            X.append(scaled_data[i - WINDOW_SIZE:i, 0])
-            y.append(scaled_data[i:i + FUTURE_DAYS, 0])
+            X.append(scaled_data[i - WINDOW_SIZE:i])  # shape: (30, 1)
+            y.append(scaled_data[i:i + FUTURE_DAYS].flatten())  # shape: (FUTURE_DAYS,)
         X, y = np.array(X), np.array(y)
 
+        # Reshape for LSTM: (samples, timesteps, features)
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
 
         model = Sequential([
-            Dense(128, activation='relu', input_shape=(X.shape[1],)),
+            LSTM(64, return_sequences=True, input_shape=(WINDOW_SIZE, 1)),
+            Dropout(0.2),
+            LSTM(32),
             Dense(64, activation='relu'),
             Dense(FUTURE_DAYS)
         ])
-        model.compile(optimizer=Adam(learning_rate=0.001), loss='mse')
+        model.compile(optimizer='adam', loss='mse')
         model.fit(X_train, y_train, epochs=50, batch_size=32, verbose=0)
 
         y_pred = model.predict(X_test)
         r2 = r2_score(y_test.flatten(), y_pred.flatten())
 
-
+        # Predict future
         last_window = scaled_data[-WINDOW_SIZE:]
-        last_window = np.expand_dims(last_window.flatten(), axis=0)
+        last_window = last_window.reshape((1, WINDOW_SIZE, 1))
         prediction_scaled = model.predict(last_window)[0]
         prediction = scaler.inverse_transform(prediction_scaled.reshape(-1, 1)).flatten()
-
 
         historical_dates = data.index.strftime('%Y-%m-%d').tolist()
         historical_prices = data['Close'].tolist()
@@ -83,6 +85,5 @@ def predict_stock():
         return jsonify({"error": str(e)}), 500
 
 
-# Run the Flask app
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

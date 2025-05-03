@@ -27,6 +27,7 @@ export default function App() {
     try {
       const response = await fetch(
         `${backend_api_key}/predict?symbol=${ticker}&days=${days}`
+        // `http://localhost:5001/predict?symbol=${ticker}&days=${days}`,
       );
       const data = await response.json();
       setStockData(data);
